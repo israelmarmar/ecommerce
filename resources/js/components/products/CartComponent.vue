@@ -134,6 +134,7 @@ export default {
         this.productItems[index].quantity =
           this.productItems[index].quantity + 1;
       } else {
+        response.text().then((text) => console.log(text));
         alert("Something went wrong!");
       }
     },
@@ -148,6 +149,7 @@ export default {
         this.productItems[index].quantity =
           this.productItems[index].quantity - 1;
       } else {
+        response.text().then((text) => console.log(text));
         alert("Something went wrong!");
       }
     },

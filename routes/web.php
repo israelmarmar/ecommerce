@@ -14,6 +14,10 @@ use App\Http\Controllers\ProductController;
 |
 */
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::get('/page/{vue_capture?}', function () {
     return view('ecommerce');
    })->where('vue_capture', '[\/\w\.-]*');

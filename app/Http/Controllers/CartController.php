@@ -45,7 +45,12 @@ class CartController extends Controller
         if($user===null)
             return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
 
-        ProductItem::find($id)->increment('quantity');
+        $productItem = ProductItem::find($id);
+        $productItem->increment('quantity');
+        $cart = $productItem->cart;
+        $cart->total = $cart->total + $productItem->product->price;
+        $cart->touch();
+        $cart->save();
 
         return ProductItem::find($id);
     }
@@ -60,8 +65,14 @@ class CartController extends Controller
 
         $productItem = ProductItem::find($id);
 
-        if($productItem->quantity === 0)
-        $productItem->delete();
+        $cart = $productItem->cart;
+        $cart->total = $cart->total - $productItem->product->price;
+        $cart->touch();
+        $cart->save();
+
+        if($productItem->quantity === 0){
+            $productItem->delete();
+        }
 
         return $productItem;
     }
@@ -142,7 +153,12 @@ class CartController extends Controller
         if($user===null)
             return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
 
-        ProductItem::destroy($id);
+        $productItem = ProductItem::find($id);
+        $cart = $productItem->cart;
+        $cart->total = $cart->total - $productItem->quantity * $productItem->product->price;
+        $productItem::destroy($id);
+        $cart->touch();
+        $cart->save();
         return ["status" => "ok", "code" => 200, 'message' => 'deleted'];
     }
 

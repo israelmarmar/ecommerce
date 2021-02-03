@@ -120,6 +120,7 @@ export default {
           localStorage.setItem("token", data.access_token);
           this.$router.go(urlProducts);
         } else {
+          response.text().then((text) => console.log(text));
           this.errors.push("Email or password incorrect.");
         }
       }

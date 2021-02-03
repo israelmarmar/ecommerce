@@ -336,12 +336,20 @@ export default {
     let user;
 
     if (this.token) {
-      user = await (await fetch(urlGetUser, {
+      const userResponse = await fetch(urlGetUser, {
         method: "GET",
         headers: {
           Authorization: `bearer ${this.token}`,
         },
-      })).json();
+      });
+
+      if (userResponse.ok) {
+        user = await userResponse.json();
+      } else {
+        userResponse.text().then((text) => console.log(text));
+        localStorage.removeItem("token");
+        window.location.href = urlLogin;
+      }
 
       const response = await fetch(urlGetProduct, {
         method: "GET",

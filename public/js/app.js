@@ -1975,7 +1975,7 @@ var token = localStorage.getItem("token");
                 this.errors = [];
 
                 if (!(this.email && this.password)) {
-                  _context.next = 16;
+                  _context.next = 17;
                   break;
                 }
 
@@ -2005,13 +2005,16 @@ var token = localStorage.getItem("token");
                 console.log(data.access_token);
                 localStorage.setItem("token", data.access_token);
                 this.$router.go(urlProducts);
-                _context.next = 16;
+                _context.next = 17;
                 break;
 
               case 15:
+                response.text().then(function (text) {
+                  return console.log(text);
+                });
                 this.errors.push("Email or password incorrect.");
 
-              case 16:
+              case 17:
                 if (!this.email) {
                   this.errors.push("Email is required.");
                 }
@@ -2020,7 +2023,7 @@ var token = localStorage.getItem("token");
                   this.errors.push("Password is required.");
                 }
 
-              case 18:
+              case 19:
               case "end":
                 return _context.stop();
             }
@@ -2484,6 +2487,9 @@ var urlGetUser = baseURL + "auth/profile/";
                 if (response.ok) {
                   this.productItems[index].quantity = this.productItems[index].quantity + 1;
                 } else {
+                  response.text().then(function (text) {
+                    return console.log(text);
+                  });
                   alert("Something went wrong!");
                 }
 
@@ -2522,6 +2528,9 @@ var urlGetUser = baseURL + "auth/profile/";
                 if (response.ok) {
                   this.productItems[index].quantity = this.productItems[index].quantity - 1;
                 } else {
+                  response.text().then(function (text) {
+                    return console.log(text);
+                  });
                   alert("Something went wrong!");
                 }
 
@@ -3083,7 +3092,7 @@ var urlAddToCart = baseURL + "cart/add";
     var _mounted = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee5() {
       var _this2 = this;
 
-      var user, response, responseCart, responseAllProduct;
+      var user, userResponse, response, responseCart, responseAllProduct;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
@@ -3091,7 +3100,7 @@ var urlAddToCart = baseURL + "cart/add";
               this.token = localStorage.getItem("token");
 
               if (!this.token) {
-                _context5.next = 19;
+                _context5.next = 26;
                 break;
               }
 
@@ -3104,12 +3113,30 @@ var urlAddToCart = baseURL + "cart/add";
               });
 
             case 4:
-              _context5.next = 6;
-              return _context5.sent.json();
+              userResponse = _context5.sent;
 
-            case 6:
+              if (!userResponse.ok) {
+                _context5.next = 11;
+                break;
+              }
+
+              _context5.next = 8;
+              return userResponse.json();
+
+            case 8:
               user = _context5.sent;
-              _context5.next = 9;
+              _context5.next = 14;
+              break;
+
+            case 11:
+              userResponse.text().then(function (text) {
+                return console.log(text);
+              });
+              localStorage.removeItem("token");
+              window.location.href = urlLogin;
+
+            case 14:
+              _context5.next = 16;
               return fetch(urlGetProduct, {
                 method: "GET",
                 headers: {
@@ -3117,34 +3144,34 @@ var urlAddToCart = baseURL + "cart/add";
                 }
               });
 
-            case 9:
+            case 16:
               response = _context5.sent;
 
               if (!response.ok) {
-                _context5.next = 17;
+                _context5.next = 24;
                 break;
               }
 
-              _context5.next = 13;
+              _context5.next = 20;
               return response.json();
 
-            case 13:
+            case 20:
               this.products = _context5.sent;
               this.products.forEach(function (product) {
                 product.showEditForm = false;
                 product.price = product.price / 100;
               });
-              _context5.next = 19;
+              _context5.next = 26;
               break;
 
-            case 17:
+            case 24:
               response.text().then(function (text) {
                 return console.log(text);
               });
               throw new Error("Unauthorized");
 
-            case 19:
-              _context5.next = 21;
+            case 26:
+              _context5.next = 28;
               return fetch(urlGetCart, {
                 method: "GET",
                 headers: {
@@ -3152,30 +3179,30 @@ var urlAddToCart = baseURL + "cart/add";
                 }
               });
 
-            case 21:
+            case 28:
               responseCart = _context5.sent;
 
               if (!responseCart.ok) {
-                _context5.next = 29;
+                _context5.next = 36;
                 break;
               }
 
-              _context5.next = 25;
+              _context5.next = 32;
               return responseCart.json();
 
-            case 25:
+            case 32:
               this.cart = _context5.sent;
               this.cart.forEach(function (productItem) {
                 productItem.product.price = productItem.product.price / 100;
               });
-              _context5.next = 30;
+              _context5.next = 37;
               break;
 
-            case 29:
+            case 36:
               throw new Error("Unauthorized");
 
-            case 30:
-              _context5.next = 32;
+            case 37:
+              _context5.next = 39;
               return fetch(urlGetAllProduct, {
                 method: "GET",
                 headers: {
@@ -3183,18 +3210,18 @@ var urlAddToCart = baseURL + "cart/add";
                 }
               });
 
-            case 32:
+            case 39:
               responseAllProduct = _context5.sent;
 
               if (!responseAllProduct.ok) {
-                _context5.next = 41;
+                _context5.next = 48;
                 break;
               }
 
-              _context5.next = 36;
+              _context5.next = 43;
               return responseAllProduct.json();
 
-            case 36:
+            case 43:
               this.allProducts = _context5.sent;
               if (user) this.allProducts = this.allProducts.filter(function (product) {
                 return product.user_id != user.id;
@@ -3207,13 +3234,13 @@ var urlAddToCart = baseURL + "cart/add";
                 product.addedToCart = addedToCart !== undefined;
                 product.price = product.price / 100;
               });
-              _context5.next = 42;
+              _context5.next = 49;
               break;
 
-            case 41:
+            case 48:
               throw new Error("Unauthorized");
 
-            case 42:
+            case 49:
             case "end":
               return _context5.stop();
           }
