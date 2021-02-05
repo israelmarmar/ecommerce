@@ -18,6 +18,8 @@ Route::get('/product', [App\Http\Controllers\ProductController::class, 'index'])
 Route::get('/allproduct', [App\Http\Controllers\ProductController::class, 'showAll']);
 Route::post('/product/update/{id}', [App\Http\Controllers\ProductController::class, 'update']);
 Route::post('/product/add', [App\Http\Controllers\ProductController::class, 'create']);
+Route::get('/purchase', [App\Http\Controllers\PurchaseController::class, 'index']);
+Route::post('/purchase/add', [App\Http\Controllers\PaymentController::class, 'checkout']);
 Route::get('/cart', [App\Http\Controllers\CartController::class, 'showProducts']);
 Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addProductToCart']);
 Route::post('/cart/delete/{id}', [App\Http\Controllers\CartController::class, 'destroyItem']);

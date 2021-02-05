@@ -4,6 +4,9 @@
       <a class="nav-item nav-link" v-if="token" @click="productsLink" href="#"
         >Products</a
       >
+      <a class="nav-item nav-link" v-if="token" @click="purchasesLink" href="#"
+        >Purchases</a
+      >
       <a class="nav-item nav-link" v-if="token" @click="logout" href="#"
         >Logout</a
       >
@@ -12,7 +15,7 @@
     <div id="app" class="container">
       <h4 v-if="token">My cart</h4>
       <p v-if="token && (!productItems || productItems.length === 0)">
-        Your cart is empty
+        Loading...
       </p>
       <div
         class="products_box"
@@ -61,11 +64,25 @@
           </div>
         </div>
       </div>
+      <button
+        :class="['btn', 'btn-success', loading ? 'disabled' : null]"
+        id="buy-button"
+        @click="buy"
+        :disabled="loading"
+        v-if="productItems && productItems.length > 0"
+      >
+        <div class="spinner-border text-light" role="status" v-if="loading"></div>
+          Buy Now
+      </button>
     </div>
   </div>
 </template>
 
 <script>
+import { loadStripe } from "@stripe/stripe-js";
+const stripePromise = loadStripe(
+  "pk_test_51IGpuIJMHnUuOtXFuebAUMSAgJiN98NLJ7ky9ukEkZA1rYdagyE4n3vumFmWUoqsfbNisO05Y82JPMEGAaqZaa1t00kOtvAyhd"
+);
 const baseURL = "http://127.0.0.1:8000/api/";
 const urlLogin = "login";
 const urlGetProduct = baseURL + "cart/";
@@ -73,6 +90,7 @@ const urlIncrement = urlGetProduct + "increment/";
 const urlDecrement = urlGetProduct + "decrement/";
 const urlDelete = urlGetProduct + "delete/";
 const urlGetUser = baseURL + "auth/profile/";
+const urlBuy = baseURL + "purchase/add";
 
 export default {
   data() {
@@ -83,9 +101,30 @@ export default {
       tempImage: "",
       tempQuantity: "",
       token: null,
+      loading: false
     };
   },
   methods: {
+    buy: async function () {
+      this.loading = true;
+      const stripe = await stripePromise;
+      const response = await fetch(urlBuy, {
+        method: "POST",
+        headers: {
+              Authorization: `bearer ${this.token}`,
+            },
+      });
+      const text = await response.text();
+      console.log(text);
+      const session = JSON.parse(text);
+      // When the customer clicks on the button, redirect them to Checkout.
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+      if (result.error) {
+        console.log(error);
+      }
+    },
     getProducts: async function () {
       this.token = localStorage.getItem("token");
       let user;
@@ -119,17 +158,23 @@ export default {
     productsLink: function () {
       this.$router.push({ name: "Products" });
     },
+    purchasesLink: function () {
+      this.$router.push({ name: "Purchases" });
+    },
     logout: function () {
       localStorage.removeItem("token");
       window.location.href = urlLogin;
     },
     incrementProduct: async function (index) {
-      const response = await fetch(urlIncrement + `${this.productItems[index].id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `bearer ${this.token}`,
-        },
-      });
+      const response = await fetch(
+        urlIncrement + `${this.productItems[index].id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `bearer ${this.token}`,
+          },
+        }
+      );
       if (response.ok) {
         this.productItems[index].quantity =
           this.productItems[index].quantity + 1;
@@ -139,12 +184,15 @@ export default {
       }
     },
     decrementProduct: async function (index) {
-      const response = await fetch(urlDecrement + `${this.productItems[index].id}`, {
-        method: "GET",
-        headers: {
-          Authorization: `bearer ${this.token}`,
-        },
-      });
+      const response = await fetch(
+        urlDecrement + `${this.productItems[index].id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `bearer ${this.token}`,
+          },
+        }
+      );
       if (response.ok) {
         this.productItems[index].quantity =
           this.productItems[index].quantity - 1;
@@ -154,12 +202,15 @@ export default {
       }
     },
     deleteProduct: async function (index) {
-      const response = await fetch(urlDelete + `${this.productItems[index].id}`, {
-        method: "POST",
-        headers: {
-          Authorization: `bearer ${this.token}`,
-        },
-      });
+      const response = await fetch(
+        urlDelete + `${this.productItems[index].id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `bearer ${this.token}`,
+          },
+        }
+      );
       if (response.ok) {
         this.productItems[index].quantity = 0;
       } else {
@@ -180,6 +231,10 @@ html,
 body {
   font-family: "Lato", "Arial", sans-serif;
   font-weight: 500;
+}
+
+.disabled {
+  opacity:0.5;
 }
 
 #heading {

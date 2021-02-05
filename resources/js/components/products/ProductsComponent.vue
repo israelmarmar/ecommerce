@@ -1,8 +1,15 @@
 <template>
   <div>
     <nav class="navbar navbar-light bg-light justify-content-end">
-      <a class="nav-item nav-link" v-if="token" @click="cartLink" href="#">Cart</a>
-      <a class="nav-item nav-link" v-if="token" @click="logout" href="#">Logout</a>
+      <a class="nav-item nav-link" v-if="token" @click="cartLink" href="#"
+        >Cart</a
+      >
+      <a class="nav-item nav-link" v-if="token" @click="purchasesLink" href="#"
+        >Purchases</a
+      >
+      <a class="nav-item nav-link" v-if="token" @click="logout" href="#"
+        >Logout</a
+      >
     </nav>
     <h1 id="heading">Ecommerce</h1>
     <div id="app" class="container">
@@ -60,7 +67,9 @@
         </button>
       </form>
       <h4 v-if="token">My products</h4>
-      <p v-if="token && (!products || products.length === 0)">Your catalog is empty</p>
+      <p v-if="token && (!products || products.length === 0)">
+        Your catalog is empty
+      </p>
       <div
         class="products_box"
         v-bind:key="index"
@@ -149,7 +158,9 @@
       </div>
 
       <h4>All products</h4>
-      <p v-if="!allProducts || allProducts.length === 0">There are no products</p>
+      <p v-if="!allProducts || allProducts.length === 0">
+        There are no products
+      </p>
       <div
         class="products_box"
         v-bind:key="index"
@@ -168,8 +179,21 @@
               <h2 class="product_name">{{ product.name }}</h2>
               <h3 class="product_quantity">Quantity: {{ product.quantity }}</h3>
               <h3 class="product_price"><span>$</span>{{ product.price }}</h3>
-              <button type="button" class="buy_btn btn btn-lg btn-outline-success" @click="addToCart(index)" v-if="!product.addedToCart">Add to cart</button>
-              <button type="button" class="buy_btn btn btn-lg btn-outline-success" v-else><img :src="checkImg">Added to chart</button>
+              <button
+                type="button"
+                class="buy_btn btn btn-lg btn-outline-success"
+                @click="addToCart(index)"
+                v-if="!product.addedToCart"
+              >
+                Add to cart
+              </button>
+              <button
+                type="button"
+                class="buy_btn btn btn-lg btn-outline-success"
+                v-else
+              >
+                <img :src="checkImg" />Added to chart
+              </button>
             </div>
           </div>
         </div>
@@ -202,7 +226,7 @@ export default {
       tempQuantity: "",
       token: null,
       cart: null,
-      checkImg: require('../../../../public/img/check.svg').default
+      checkImg: require("../../../../public/img/check.svg").default,
     };
   },
   methods: {
@@ -212,6 +236,9 @@ export default {
     logout: function () {
       localStorage.removeItem("token");
       window.location.href = urlLogin;
+    },
+    purchasesLink: function () {
+      this.$router.push({ name: "Purchases" });
     },
     resetInputFields: function () {
       this.tempName = "";
@@ -251,13 +278,13 @@ export default {
     },
     addToCart: async function (index) {
       const response = await fetch(urlAddToCart, {
-          method: "POST",
-          headers: {
-            Authorization: `bearer ${this.token}`,
-          },
-          body: new URLSearchParams({
-            product_id: this.allProducts[index].id
-          }),
+        method: "POST",
+        headers: {
+          Authorization: `bearer ${this.token}`,
+        },
+        body: new URLSearchParams({
+          product_id: this.allProducts[index].id,
+        }),
       });
 
       if (response.ok) {
@@ -268,14 +295,14 @@ export default {
           price: this.allProducts[index].price,
           image: this.allProducts[index].image,
           quantity: this.allProducts[index].quantity,
-          addedToCart: true
+          addedToCart: true,
         };
         let products = [...this.allProducts];
-        products[index] = newProduct
+        products[index] = newProduct;
         this.allProducts = products;
-      }else{
+      } else {
         response.text().then((text) => console.log(text));
-        alert("Something went wrong!")
+        alert("Something went wrong!");
       }
     },
     editButtonPressed: function (index) {
@@ -370,38 +397,42 @@ export default {
     }
 
     const responseCart = await fetch(urlGetCart, {
-        method: "GET",
-        headers: {
-          Authorization: `bearer ${this.token}`,
-        },
+      method: "GET",
+      headers: {
+        Authorization: `bearer ${this.token}`,
+      },
+    });
+    if (responseCart.ok) {
+      this.cart = await responseCart.json();
+      this.cart.forEach((productItem) => {
+        productItem.product.price = productItem.product.price / 100;
       });
-      if (responseCart.ok) {
-        this.cart = await responseCart.json();
-        this.cart.forEach((productItem) => {
-          productItem.product.price = productItem.product.price / 100;
-        });
-      } else {
-        throw new Error("Unauthorized");
-      }
+    } else {
+      throw new Error("Unauthorized");
+    }
 
     const responseAllProduct = await fetch(urlGetAllProduct, {
-        method: "GET",
-        headers: {
-          Authorization: `bearer ${this.token}`,
-        },
+      method: "GET",
+      headers: {
+        Authorization: `bearer ${this.token}`,
+      },
+    });
+    if (responseAllProduct.ok) {
+      this.allProducts = await responseAllProduct.json();
+      if (user)
+        this.allProducts = this.allProducts.filter(
+          (product) => product.user_id != user.id
+        );
+      this.allProducts.forEach((product) => {
+        const addedToCart = this.cart.find(
+          (productItem) => productItem.product_id === product.id
+        );
+        product.addedToCart = addedToCart !== undefined;
+        product.price = product.price / 100;
       });
-      if (responseAllProduct.ok) {
-        this.allProducts = await responseAllProduct.json();
-        if(user)
-        this.allProducts = this.allProducts.filter(product => product.user_id != user.id);
-        this.allProducts.forEach((product) => {
-          const addedToCart = this.cart.find(productItem => productItem.product_id === product.id );
-          product.addedToCart = addedToCart !== undefined;
-          product.price = product.price / 100;
-        });
-      } else {
-        throw new Error("Unauthorized");
-      }
+    } else {
+      throw new Error("Unauthorized");
+    }
   },
 };
 </script>

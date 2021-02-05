@@ -80,10 +80,11 @@ class CartController extends Controller
     public function addProductToCart(Request $request){
         $data = $request->all();
         $user = auth('api')->user();
-        $cart = $user->cart;
 
         if($user===null)
             return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
+
+        $cart = $user->cart;
 
         if($cart===null){
             $data['user_id'] = $user->id;
@@ -106,6 +107,7 @@ class CartController extends Controller
             return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Product already added to cart'],401);
         
         $cart->total = $cart->total + $product->price;
+        $cart->touch();
         $cart->save();
 
         $data['cart_id'] = $cart->id;
