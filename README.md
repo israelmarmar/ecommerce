@@ -1,7 +1,7 @@
 # Ecommerce
 
-To run the application, have NodeJS, XAMPP(Apache, PHP, MariaDB) and Composer installed on your machine.
-First of all, configure the environment variables in the .env.example file and rename it to .env.
+To run the application, have NodeJS, XAMPP (Apache, PHP, MariaDB) and Composer installed on your machine.
+First, set the environment variables in the .env.example file, enter the database settings and the Stripe API key and rename the env.sample file to .env.
 
 Then run the commands:
     npm install && npm run dev && composer update && php artisan migrate && php artisan db:seed.
