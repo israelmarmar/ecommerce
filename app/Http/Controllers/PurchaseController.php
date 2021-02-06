@@ -22,7 +22,7 @@ class PurchaseController extends Controller
         if($user===null)
         return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
 
-        $data = Purchase::with("cart")->get();
+        $data = Purchase::where("user_id",$user->id)->with("cart")->get();
 
         $data->map(function ($record) use ($status){
             $purchase = Purchase::find($record->id);

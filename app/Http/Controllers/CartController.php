@@ -24,6 +24,16 @@ class CartController extends Controller
         
     }
 
+    public function showOrders()
+    {   
+        $user = auth('api')->user();
+
+        if($user===null || $user->role != 'admin')
+        return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
+
+        return Cart::where('user_id', null)->where('user_id', null)->with("products.product")->with("purchase")->get(); 
+    }
+
     public function showProducts()
     {   
         $user = auth('api')->user();

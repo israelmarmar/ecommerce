@@ -21,6 +21,7 @@ Route::post('/product/add', [App\Http\Controllers\ProductController::class, 'cre
 Route::get('/purchase', [App\Http\Controllers\PurchaseController::class, 'index']);
 Route::post('/purchase/add', [App\Http\Controllers\PaymentController::class, 'checkout']);
 Route::get('/cart', [App\Http\Controllers\CartController::class, 'showProducts']);
+Route::get('/orders', [App\Http\Controllers\CartController::class, 'showOrders']);
 Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addProductToCart']);
 Route::post('/cart/delete/{id}', [App\Http\Controllers\CartController::class, 'destroyItem']);
 Route::get('/cart/increment/{id}', [App\Http\Controllers\CartController::class, 'incrementProduct']);

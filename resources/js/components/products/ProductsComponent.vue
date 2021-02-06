@@ -1,14 +1,37 @@
 <template>
   <div>
     <nav class="navbar navbar-light bg-light justify-content-end">
-      <a class="nav-item nav-link" v-if="token" @click="cartLink" href="#"
+      <a
+        class="nav-item nav-link"
+        v-if="user && user.role == 'buyer'"
+        @click="cartLink"
+        href="#"
         >Cart</a
       >
-      <a class="nav-item nav-link" v-if="token" @click="purchasesLink" href="#"
+      <a
+        class="nav-item nav-link"
+        v-if="user && user.role == 'admin'"
+        @click="ordersLink"
+        href="#"
+        >Orders</a
+      >
+      <a
+        class="nav-item nav-link"
+        v-if="user && user.role == 'buyer'"
+        @click="purchasesLink"
+        href="#"
         >Purchases</a
       >
       <a class="nav-item nav-link" v-if="token" @click="logout" href="#"
         >Logout</a
+      >
+
+      <a class="nav-item nav-link" v-if="!token" @click="loginLink" href="#"
+        >Login</a
+      >
+
+      <a class="nav-item nav-link" v-if="!token" @click="registerLink" href="#"
+        >Register</a
       >
     </nav>
     <h1 id="heading">Ecommerce</h1>
@@ -16,7 +39,7 @@
       <button
         type="button"
         @click="addProductButtonPressed"
-        v-if="token"
+        v-if="user && user.role === 'admin'"
         class="btn btn-success add-btn"
       >
         Add a new Product
@@ -66,134 +89,142 @@
           Submit
         </button>
       </form>
-      <h4 v-if="token">My products</h4>
-      <p v-if="token && (!products || products.length === 0)">
-        Your catalog is empty
-      </p>
-      <div
-        class="products_box"
-        v-bind:key="index"
-        v-for="(product, index) of products"
-      >
-        <div class="product_item">
-          <div class="row">
-            <div class="col-4">
-              <img
-                class="img-fluid"
-                v-bind:src="product.image"
-                alt="product-image"
-              />
+      <div v-if="user && user.role === 'admin'">
+        <h4 v-if="token">My products</h4>
+        <p v-if="token && (!products || products.length === 0)">
+          Your catalog is empty
+        </p>
+        <div
+          class="products_box"
+          v-bind:key="index"
+          v-for="(product, index) of products"
+        >
+          <div class="product_item">
+            <div class="row">
+              <div class="col-4">
+                <img
+                  class="img-fluid"
+                  v-bind:src="product.image"
+                  alt="product-image"
+                />
+              </div>
+              <div class="col-8">
+                <button
+                  @click="editButtonPressed(index)"
+                  class="btn btn-primary edit_btn"
+                >
+                  <span v-if="!product.showEditForm">Edit</span>
+                  <span v-else>Cancel</span>
+                </button>
+                <button
+                  @click="deleteProduct(index)"
+                  class="btn btn-danger delete_btn"
+                >
+                  <span>Delete</span>
+                </button>
+                <h2 class="product_name">{{ product.name }}</h2>
+                <h3 class="product_quantity">
+                  Quantity: {{ product.quantity }}
+                </h3>
+                <h3 class="product_price"><span>$</span>{{ product.price }}</h3>
+              </div>
             </div>
-            <div class="col-8">
-              <button
-                @click="editButtonPressed(index)"
-                class="btn btn-primary edit_btn"
-              >
-                <span v-if="!product.showEditForm">Edit</span>
-                <span v-else>Cancel</span>
-              </button>
-              <button
-                @click="deleteProduct(index)"
-                class="btn btn-danger delete_btn"
-              >
-                <span>Delete</span>
-              </button>
-              <h2 class="product_name">{{ product.name }}</h2>
-              <h3 class="product_quantity">Quantity: {{ product.quantity }}</h3>
-              <h3 class="product_price"><span>$</span>{{ product.price }}</h3>
+            <div>
+              <form v-show="product.showEditForm">
+                <div class="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Enter name"
+                    required
+                    v-model="tempName"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Quantity</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Enter quantity"
+                    required
+                    v-model="tempQuantity"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Image</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    placeholder="Enter image"
+                    required
+                    v-model="tempImage"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Price</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Enter price"
+                    required
+                    v-model="tempPrice"
+                  />
+                </div>
+                <button
+                  @click="editProduct(index)"
+                  type="button"
+                  class="btn btn-primary"
+                >
+                  Submit
+                </button>
+              </form>
             </div>
-          </div>
-          <div>
-            <form v-show="product.showEditForm">
-              <div class="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter name"
-                  required
-                  v-model="tempName"
-                />
-              </div>
-              <div class="form-group">
-                <label>Quantity</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter quantity"
-                  required
-                  v-model="tempQuantity"
-                />
-              </div>
-              <div class="form-group">
-                <label>Image</label>
-                <input
-                  type="url"
-                  class="form-control"
-                  placeholder="Enter image"
-                  required
-                  v-model="tempImage"
-                />
-              </div>
-              <div class="form-group">
-                <label>Price</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  placeholder="Enter price"
-                  required
-                  v-model="tempPrice"
-                />
-              </div>
-              <button
-                @click="editProduct(index)"
-                type="button"
-                class="btn btn-primary"
-              >
-                Submit
-              </button>
-            </form>
           </div>
         </div>
       </div>
 
-      <h4>All products</h4>
-      <p v-if="!allProducts || allProducts.length === 0">
-        There are no products
-      </p>
-      <div
-        class="products_box"
-        v-bind:key="index"
-        v-for="(product, index) of allProducts"
-      >
-        <div class="product_item">
-          <div class="row">
-            <div class="col-4">
-              <img
-                class="img-fluid"
-                v-bind:src="product.image"
-                alt="product-image"
-              />
-            </div>
-            <div class="col-8">
-              <h2 class="product_name">{{ product.name }}</h2>
-              <h3 class="product_quantity">Quantity: {{ product.quantity }}</h3>
-              <h3 class="product_price"><span>$</span>{{ product.price }}</h3>
-              <button
-                type="button"
-                class="buy_btn btn btn-lg btn-outline-success"
-                @click="addToCart(index)"
-                v-if="!product.addedToCart"
-              >
-                Add to cart
-              </button>
-              <button
-                type="button"
-                class="buy_btn btn btn-lg btn-outline-success"
-                v-else
-              >
-                <img :src="checkImg" />Added to chart
-              </button>
+      <div v-if="!user || (user && user.role === 'buyer')">
+        <h4>All products</h4>
+        <p v-if="!allProducts || allProducts.length === 0">
+          There are no products
+        </p>
+        <div
+          class="products_box"
+          v-bind:key="index"
+          v-for="(product, index) of allProducts"
+        >
+          <div class="product_item">
+            <div class="row">
+              <div class="col-4">
+                <img
+                  class="img-fluid"
+                  v-bind:src="product.image"
+                  alt="product-image"
+                />
+              </div>
+              <div class="col-8">
+                <h2 class="product_name">{{ product.name }}</h2>
+                <h3 class="product_quantity">
+                  Quantity: {{ product.quantity }}
+                </h3>
+                <h3 class="product_price"><span>$</span>{{ product.price }}</h3>
+                <button
+                  type="button"
+                  class="buy_btn btn btn-lg btn-outline-success"
+                  @click="addToCart(index)"
+                  v-if="user && !product.addedToCart"
+                >
+                  Add to cart
+                </button>
+                <button
+                  type="button"
+                  class="buy_btn btn btn-lg btn-outline-success"
+                  v-if="user && product.addedToCart"
+                >
+                  <img :src="checkImg" />Added to chart
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -227,15 +258,25 @@ export default {
       token: null,
       cart: null,
       checkImg: require("../../../../public/img/check.svg").default,
+      user: null,
     };
   },
   methods: {
     cartLink: function () {
       this.$router.push({ name: "Cart" });
     },
+    loginLink: function () {
+      this.$router.push({ name: "Login" });
+    },
+    registerLink: function () {
+      this.$router.push({ name: "Register" });
+    },
     logout: function () {
       localStorage.removeItem("token");
       window.location.href = urlLogin;
+    },
+    ordersLink: function () {
+      this.$router.push({ name: "Orders" });
     },
     purchasesLink: function () {
       this.$router.push({ name: "Purchases" });
@@ -360,7 +401,6 @@ export default {
 
   mounted: async function mounted() {
     this.token = localStorage.getItem("token");
-    let user;
 
     if (this.token) {
       const userResponse = await fetch(urlGetUser, {
@@ -371,7 +411,7 @@ export default {
       });
 
       if (userResponse.ok) {
-        user = await userResponse.json();
+        this.user = await userResponse.json();
       } else {
         userResponse.text().then((text) => console.log(text));
         localStorage.removeItem("token");
@@ -392,7 +432,6 @@ export default {
         });
       } else {
         response.text().then((text) => console.log(text));
-        throw new Error("Unauthorized");
       }
     }
 
@@ -408,25 +447,24 @@ export default {
         productItem.product.price = productItem.product.price / 100;
       });
     } else {
-      throw new Error("Unauthorized");
+      responseCart.text().then((text) => console.log(text));
     }
 
-    const responseAllProduct = await fetch(urlGetAllProduct, {
-      method: "GET",
-      headers: {
-        Authorization: `bearer ${this.token}`,
-      },
-    });
+    const responseAllProduct = await fetch(urlGetAllProduct);
     if (responseAllProduct.ok) {
       this.allProducts = await responseAllProduct.json();
-      if (user)
+      if (this.user)
         this.allProducts = this.allProducts.filter(
-          (product) => product.user_id != user.id
+          (product) => product.user_id != this.user.id
         );
       this.allProducts.forEach((product) => {
-        const addedToCart = this.cart.find(
-          (productItem) => productItem.product_id === product.id
-        );
+        let addedToCart;
+        if (this.cart){
+          addedToCart = this.cart.find(
+            (productItem) => productItem.product_id === product.id
+          );
+        }
+
         product.addedToCart = addedToCart !== undefined;
         product.price = product.price / 100;
       });

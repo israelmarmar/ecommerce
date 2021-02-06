@@ -31,7 +31,7 @@ class ProductController extends Controller
         $user = auth('api')->user();
         $data = $request->all();
 
-        if($user===null)
+        if($user===null || $user->role !== 'admin')
         return Response()->json(["status" => "ok", "code" => 401, 'message' => 'Unauthorized'],401);
         
         $data['user_id'] = $user->id;

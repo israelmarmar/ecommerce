@@ -4,7 +4,10 @@
       <a class="nav-item nav-link" v-if="token" @click="productsLink" href="#"
         >Products</a
       >
-      <a class="nav-item nav-link" v-if="token" @click="purchasesLink" href="#"
+      <a class="nav-item nav-link" v-if="user && user.role == 'admin'" @click="ordersLink" href="#"
+        >Orders</a
+      >
+      <a class="nav-item nav-link" v-if="user && user.role == 'buyer'" @click="purchasesLink" href="#"
         >Purchases</a
       >
       <a class="nav-item nav-link" v-if="token" @click="logout" href="#"
@@ -101,7 +104,8 @@ export default {
       tempImage: "",
       tempQuantity: "",
       token: null,
-      loading: false
+      loading: false,
+      user: null
     };
   },
   methods: {
@@ -127,10 +131,9 @@ export default {
     },
     getProducts: async function () {
       this.token = localStorage.getItem("token");
-      let user;
 
       if (this.token) {
-        user = await (
+        this.user = await (
           await fetch(urlGetUser, {
             method: "GET",
             headers: {
@@ -157,6 +160,9 @@ export default {
     },
     productsLink: function () {
       this.$router.push({ name: "Products" });
+    },
+    ordersLink: function () {
+      this.$router.push({ name: "Orders" });
     },
     purchasesLink: function () {
       this.$router.push({ name: "Purchases" });

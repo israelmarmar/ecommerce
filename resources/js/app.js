@@ -29,6 +29,7 @@ const router = new VueRouter({
         { path: '/page/cart', component: require('./components/products/CartComponent.vue').default, name: 'Cart' },
         { path: '/page/register', component: require('./components/auth/RegisterComponent.vue').default, name: 'Register' },
         { path: '/page/products', component: require('./components/products/ProductsComponent.vue').default, name: 'Products' },
+        { path: '/page/orders', component: require('./components/products/OrdersComponent.vue').default, name: 'Orders' },
         { path: '/page/purchases', component: require('./components/products/PurchasesComponent.vue').default, name: 'Purchases' }
     ]
 });

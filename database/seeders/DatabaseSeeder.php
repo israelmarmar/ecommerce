@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,7 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        DB::table('users')->insert([
+            'name' => 'Admin',
+            'email' => 'admin@ecommerce.com',
+            'password' => Hash::make('12345678'),
+            'role' => 'admin'
+        ]);
+
         DB::table('products')->insert([
             'user_id' => 1,
             'name' => 'Adidas Final UCL Ball',
@@ -30,5 +37,6 @@ class DatabaseSeeder extends Seeder
             'price' => 5500000,
             'quantity' => 3
         ]);
+
     }
 }
