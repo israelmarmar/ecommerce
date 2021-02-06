@@ -1,6 +1,6 @@
 # Ecommerce
 
-To run the application, have NodeJS installed on your machine.
+To run the application, have NodeJS, XAMPP(Apache, PHP, MariaDB) and Composer installed on your machine.
 First of all, configure the environment variables in the .env.example file and rename it to .env.
 
 Then run the commands:
